@@ -1,6 +1,6 @@
 #include "Gyro.h"
-#include "WS2812BI2S.h"
-#include <Adafruit_NeoPixel.h>
+#include "WS2812B.h"
+
 #include "File.h"
 
 
@@ -46,14 +46,19 @@ bool loadCurrentImage()
 void setup()
 {
   Serial.begin(115200);
+  while(!Serial);
+  Serial.println("hellllllo");
+  Strip.begin();
+  Strip.clear();
   initPixels();
   pinMode(buttonPin, INPUT);
-  pinMode(ledpin,OUTPUT);
-  
+  //pinMode(ledpin,OUTPUT);
   gyro.calculateCorrection(); //calculate initial position 
   initFileSystem();
   loadCurrentImage();
+  
 }
+
 
 int pressed = 0; //the button is pressed/not
 bool on = false; // the strip is turned on/not
@@ -81,9 +86,11 @@ void turnOff()
 //update image according to current angle
 void loopSaber(int dt)
 {
+  
+  uint32_t res[45];
   static float angle = 0;
   gyro.poll();
-
+  
   //calculate distance from start position and see if strip moved ~more than 5
   float td = sqrt(gyro.rotationV[0] * gyro.rotationV[0] + gyro.rotationV[1] * gyro.rotationV[1] + gyro.rotationV[2] * gyro.rotationV[2]);
   float d = gyro.rotationV[2] * dt * 0.001;
@@ -97,10 +104,14 @@ void loopSaber(int dt)
     float rl = 1 / ((l == 0)? 1 : l);
     angle = angle * 0.9 + acos(rl * gyro.positionA[0]) * 180 / M_PI * 0.1;
   }
-
+ Serial.println("the angle is:");
+ Serial.println(angle);
   //strip is moving --> calculate current angle
   float sx = -cos(angle * M_PI / 180);
   float sy = -sin(angle * M_PI / 180);
+   //Serial.println(sx);
+   // Serial.println(sy);
+
   int sample = 0;
   
   for(int i = 0; i < pixelCount; i++)
@@ -117,7 +128,7 @@ void loopSaber(int dt)
       pixels[sample++] = bitLUT[((int)image[a][1] * image[a][1]) >> 8];
       pixels[sample++] = bitLUT[((int)image[a][0] * image[a][0]) >> 8];
       pixels[sample++] = bitLUT[((int)image[a][2] * image[a][2]) >> 8];
-      res[i] = Strip.color(pixels[i],pixels[i+1],pixels[i+2]);
+      res[i] = Strip.Color(pixels[i],pixels[i+1],pixels[i+2]);
       
     }
     //update pixels out of the visible area to be a random color
@@ -126,13 +137,13 @@ void loopSaber(int dt)
       pixels[sample++] = bitLUT[0];
       pixels[sample++] = bitLUT[0];
       pixels[sample++] = bitLUT[0];  
-      res[i] = Strip.color(pixels[i],pixels[i+1],pixels[i+2]);    
+      res[i] = Strip.Color(pixels[i],pixels[i+1],pixels[i+2]);    
     }
     
   }
   //update the strip with the new pixels
   for(int i=0;i<ledCount;i++ ){
-    strip.setPixelColor(i,res[i]);  
+    Strip.setPixelColor(i,res[i]);  
   }
   Strip.show();
  
@@ -140,6 +151,8 @@ void loopSaber(int dt)
 
 void loop()
 {
+  Serial.println("hellllllo2");
+
   static int time = 0;
   int t = millis();
   int dt = t - time;

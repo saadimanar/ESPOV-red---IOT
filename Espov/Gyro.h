@@ -72,17 +72,18 @@ class Gyro
       dr[2] += readShort();
       delay(10);
     }
-    correctionR[0] = dr[0] / samples;
-    correctionR[1] = dr[0] / samples;
+    correctionR[0] = dr[0] / samples; 
+    correctionR[1] = dr[0] / samples; //why dr[0] not dr[1] ? 
     correctionR[2] = dr[0] / samples;
-    Serial.println(correctionR[0]);
+   /* Serial.println(correctionR[0]);
     Serial.println(correctionR[1]);
-    Serial.println(correctionR[2]);
+    Serial.println(correctionR[2]);*/
 
   }
 
   int poll()
   {
+    
     Wire.beginTransmission(address);
     Wire.write(0x3B);
     Wire.endTransmission(false);
@@ -91,12 +92,22 @@ class Gyro
     positionA[1] = readShort() * accScale * (1 << ascale);
     positionA[2] = readShort() * accScale * (1 << ascale);
     temperature = readShort() / 340.f + 36.53f;
-    rotationV[0] = (readShort() - correctionR[0]) * rotScale * (1 << gscale);
-    rotationV[1] = (readShort() - correctionR[1]) * rotScale * (1 << gscale);
+    Serial.println("heeeeeeerreeeeeeeeeee3");
+
+     rotationV[0] = (readShort() - correctionR[0]) * rotScale * (1 << gscale);
+        //Serial.println("heeeeeeerreeeeeeeeeee4");
+
+     rotationV[1] = (readShort() - correctionR[1]) * rotScale * (1 << gscale);
+       // Serial.println("heeeeeeerreeeeeeeeeee5");
+
     rotationV[2] = (readShort() - correctionR[2]) * rotScale * (1 << gscale);
-        Serial.println(rotationV[0]);
-        Serial.println(rotationV[1]);
-        Serial.println(rotationV[2]);
+        //Serial.println("heeeeeeerreeeeeeeeeee6");
+
+     return 0;
+
+   /* Serial.println(rotationV[0]);
+    Serial.println(rotationV[1]);
+    Serial.println(rotationV[2]);*/
 
 
   }
