@@ -21,28 +21,6 @@ using namespace std;
 #define pin_num 27
  Adafruit_NeoPixel Strip(num_of_leds, pin_num, NEO_GRB + NEO_KHZ800);
  
-
-/* class WS2812B {
-
-  
-  int pin_number;
-  int number_of_leds;
-
-  
-public:
-
-  WS2812B(int pin_number, int number_of_leds) : pin_number(pin_number), number_of_leds(number_of_leds), 
-                                                strip(45, 27, NEO_GRB + NEO_KHZ800) {
-
-    strip.begin();
-    strip.clear();
-  }
-  
-
- 
-};*/
-
-
   //move to image file
 void initPixels() 
 {

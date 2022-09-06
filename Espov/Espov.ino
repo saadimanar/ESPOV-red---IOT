@@ -1,6 +1,5 @@
 #include "Gyro.h"
 #include "WS2812B.h"
-
 #include "File.h"
 
 
@@ -52,21 +51,15 @@ void setup()
   Strip.clear();
   initPixels();
   pinMode(buttonPin, INPUT);
-  //pinMode(ledpin,OUTPUT);
-  gyro.calculateCorrection(); //calculate initial position 
+  gyro.calculateCorrection();   //calculate initial position 
   initFileSystem();
   loadCurrentImage();
   
 }
 
 
-int pressed = 0; //the button is pressed/not
 bool on = false; // the strip is turned on/not
-
-
-/////////////////////////
 int visibleLeds = 0;
-
 
 void turnOn()
 {
@@ -104,8 +97,8 @@ void loopSaber(int dt)
     float rl = 1 / ((l == 0)? 1 : l);
     angle = angle * 0.9 + acos(rl * gyro.positionA[0]) * 180 / M_PI * 0.1;
   }
- Serial.println("the angle is:");
- Serial.println(angle);
+ //Serial.println("the angle is:");
+ //Serial.println(angle);
   //strip is moving --> calculate current angle
   float sx = -cos(angle * M_PI / 180);
   float sy = -sin(angle * M_PI / 180);
@@ -128,7 +121,7 @@ void loopSaber(int dt)
       pixels[sample++] = bitLUT[((int)image[a][1] * image[a][1]) >> 8];
       pixels[sample++] = bitLUT[((int)image[a][0] * image[a][0]) >> 8];
       pixels[sample++] = bitLUT[((int)image[a][2] * image[a][2]) >> 8];
-      res[i] = Strip.Color(pixels[i],pixels[i+1],pixels[i+2]);
+     // res[i] = Strip.Color(pixels[i],pixels[i+1],pixels[i+2]);
       
     }
     //update pixels out of the visible area to be a random color
@@ -137,12 +130,15 @@ void loopSaber(int dt)
       pixels[sample++] = bitLUT[0];
       pixels[sample++] = bitLUT[0];
       pixels[sample++] = bitLUT[0];  
-      res[i] = Strip.Color(pixels[i],pixels[i+1],pixels[i+2]);    
+      //res[i] = Strip.Color(pixels[i],pixels[i+1],pixels[i+2]);  
+        
     }
     
   }
   //update the strip with the new pixels
   for(int i=0;i<ledCount;i++ ){
+  res[i] = Strip.Color(0,0,255);  
+
     Strip.setPixelColor(i,res[i]);  
   }
   Strip.show();
@@ -151,43 +147,43 @@ void loopSaber(int dt)
 
 void loop()
 {
-  Serial.println("hellllllo2");
 
   static int time = 0;
   int t = millis();
   int dt = t - time;
   time = t;
+  while(digitalRead(buttonPin) == LOW && !on){
+    //turnOn();
+    //currentImage = (currentImage + 1) & 3;
+    //loadCurrentImage();
+           loopSaber(dt);
+                 on = true;;
 
-  //if button is not pressed
-  if(!digitalRead(buttonPin))
-  {    
-    pressed += dt;
-    //if one second passed since the button was pressed --> one image has been displayed ---> turn off
-    if(pressed > 1000)
-    {
-      if(on)
-        turnOff();
-      else
-      {
-        turnOn();
-      }
-      pressed = -10000; 
+           
     }
-  }
-  //the button is pressed for more than 100 msc --> display next image
-  else
-  {
-    if(pressed > 100)
-    {
-      currentImage = (currentImage + 1) & 3;
-      loadCurrentImage();
-    }    
-    pressed = 0;
-  } 
-  loopSaber(dt); //update the next pixels
-  if(on)
-    visibleLeds += dt;
-  else
-    visibleLeds -= dt;
+ 
 
+      Strip.clear();
+   
+   if(on)
+    visibleLeds += dt;
+   else
+    visibleLeds -= dt;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
