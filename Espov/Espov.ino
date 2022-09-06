@@ -1,7 +1,7 @@
 #include "Gyro.h"
 #include "WS2812B.h"
 #include "File.h"
-
+#include <vector>
 
 static const int buttonPin = 5;
 static const int ledpin = 27;
@@ -39,22 +39,47 @@ bool loadCurrentImage()
     return false;
   } 
   return true;
+  
 }
 
+vector<int> return_angle(int dt){
+  
+  static float angle = 0;
+  gyro.poll();
+    float td = sqrt(gyro.rotationV[0] * gyro.rotationV[0] + gyro.rotationV[1] * gyro.rotationV[1] + gyro.rotationV[2] * gyro.rotationV[2]);
+  float d = gyro.rotationV[2] * dt * 0.001;
+  angle += d; 
+  if(td < 5)
+  {
+    float l = sqrt(gyro.positionA[0] * gyro.positionA[0] + gyro.positionA[1] * gyro.positionA[1] + gyro.positionA[2] * gyro.positionA[2]);
+    float rl = 1 / ((l == 0)? 1 : l);
+    angle = angle * 0.9 + acos(rl * gyro.positionA[0]) * 180 / M_PI * 0.1;
+  }
+  float sx = -cos(angle * M_PI / 180);
+  float sy = -sin(angle * M_PI / 180);
+  vector<int> result;
+  result.push_back(sx);
+  result.push_back(sy);
+  return result;
 
+  }
+  
 void setup()
 {
   Serial.begin(115200);
   while(!Serial);
-  Serial.println("hellllllo");
   Strip.begin();
   Strip.clear();
   initPixels();
   pinMode(buttonPin, INPUT);
   gyro.calculateCorrection();   //calculate initial position 
   initFileSystem();
-  loadCurrentImage();
   
+  //check if image is not being loaded
+  bool loaded = loadCurrentImage();
+  if(!loaded){
+    Serial.println("image not loaded");
+    }
 }
 
 
@@ -79,96 +104,83 @@ void turnOff()
 //update image according to current angle
 void loopSaber(int dt)
 {
-  
-  uint32_t res[45];
-  static float angle = 0;
-  gyro.poll();
-  
-  //calculate distance from start position and see if strip moved ~more than 5
-  float td = sqrt(gyro.rotationV[0] * gyro.rotationV[0] + gyro.rotationV[1] * gyro.rotationV[1] + gyro.rotationV[2] * gyro.rotationV[2]);
-  float d = gyro.rotationV[2] * dt * 0.001;
-  angle += d; 
-
-
-   //standing still (correct angle)
-  if(td < 5)
-  {
-    float l = sqrt(gyro.positionA[0] * gyro.positionA[0] + gyro.positionA[1] * gyro.positionA[1] + gyro.positionA[2] * gyro.positionA[2]);
-    float rl = 1 / ((l == 0)? 1 : l);
-    angle = angle * 0.9 + acos(rl * gyro.positionA[0]) * 180 / M_PI * 0.1;
-  }
- //Serial.println("the angle is:");
- //Serial.println(angle);
-  //strip is moving --> calculate current angle
-  float sx = -cos(angle * M_PI / 180);
-  float sy = -sin(angle * M_PI / 180);
-   //Serial.println(sx);
-   // Serial.println(sy);
-
+   uint32_t res[45];
+  vector<int> result = return_angle(dt);
+  int sx = result[0];
+  int sy = result[1];
+  //-----------------------fill the pixels-----------------------------
   int sample = 0;
-  
   for(int i = 0; i < pixelCount; i++)
   {
     int x = 64 + (int)(sx * (i + 20));
-    int y = 150 + (int)(sy * (i + 20));
-    
-    //update visible pixels 
+    int y = 45 + (int)(sy * (i + 20));
     if(i * speed < visibleLeds)
     {
       int a = 0;
-      if(x >= 0 && y >= 0 && x < imageRes[0] && y < imageRes[1])
-        a = imageRes[0] * y + x;
-      pixels[sample++] = bitLUT[((int)image[a][1] * image[a][1]) >> 8];
-      pixels[sample++] = bitLUT[((int)image[a][0] * image[a][0]) >> 8];
-      pixels[sample++] = bitLUT[((int)image[a][2] * image[a][2]) >> 8];
-     // res[i] = Strip.Color(pixels[i],pixels[i+1],pixels[i+2]);
+      if(x >= 0 && y >= 0 && x < imageRes[0] && y < imageRes[1]) 
+        {
+            a = imageRes[0] * y + x;
+            res[i] = Strip.Color(image[a][0],image[a][1],image[a][2]);  
+        }
       
     }
-    //update pixels out of the visible area to be a random color
     else
     {
-      pixels[sample++] = bitLUT[0];
-      pixels[sample++] = bitLUT[0];
-      pixels[sample++] = bitLUT[0];  
-      //res[i] = Strip.Color(pixels[i],pixels[i+1],pixels[i+2]);  
-        
-    }
-    
+      res[i] = Strip.Color(0,0,255);   
+    } 
+    Strip.setPixelColor(i,res[i]);
   }
-  //update the strip with the new pixels
-  for(int i=0;i<ledCount;i++ ){
-  res[i] = Strip.Color(0,0,255);  
-
-    Strip.setPixelColor(i,res[i]);  
-  }
-  Strip.show();
  
+  Strip.show();
 }
+
 
 void loop()
 {
-
+  // int res[45];
   static int time = 0;
   int t = millis();
   int dt = t - time;
   time = t;
-  while(digitalRead(buttonPin) == LOW && !on){
-    //turnOn();
-    //currentImage = (currentImage + 1) & 3;
-    //loadCurrentImage();
-           loopSaber(dt);
-                 on = true;;
+  uint32_t res[45];
+  if(digitalRead(buttonPin) == LOW && !on){
+    turnOn();
+   // loopSaber(dt);
 
-           
+      for(int x = 0; x < 45; x++)
+      {
+        Serial.println(image[x][0]);
+        Serial.println(image[x][1]);
+        Serial.println(image[x][2]);
+        //res[x] = Strip.Color((int)image[x][0],(int)image[x][1],(int)image[x][2]);
+        res[x] = Strip.Color(50,255,0);
+        // Serial.println("the color is");
+       // Serial.println(res[x]);
+      // res[x] = Strip.Color(bitLUT[((int)image[x][1] * image[x][1]) >> 8],bitLUT[((int)image[x][0] * image[x][0]) >> 8],bitLUT[((int)image[x][2] * image[x][2]) >> 8]);
+        Strip.setPixelColor(x,res[x]); 
+      }  
+    
+  
+    
+    Strip.show();
+    delay(10000);
+    
     }
- 
-
-      Strip.clear();
-   
-   if(on)
-    visibleLeds += dt;
-   else
-    visibleLeds -= dt;
+    if(digitalRead(buttonPin) == LOW && on){
+           turnOff();
+            for(int i=0;i<ledCount;i++ ){
+              res[i] = Strip.Color(0,0,255);  
+              Strip.setPixelColor(i,res[i]);  
+           } 
+           Strip.show();
+           delay(10000);
+            
+      }
+      
+    if(on)
+     visibleLeds += dt;
+    else
+     visibleLeds -= dt;
 }
 
 
