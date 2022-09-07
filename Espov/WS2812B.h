@@ -3,10 +3,10 @@
 
 
 //initializing variables
-static const int pixelCount = 45 + 2;                // +2?
+static const int pixelCount = 45;                // +2?
 static const int samplesNeeded = (pixelCount * 24 * 4 + 31) / 32;
 static const int stereoSamplesNeeded = (samplesNeeded + 1) / 2;
-static const int bufferSize = 128;
+static const int bufferSize = 40;
 static const int bufferCount = (stereoSamplesNeeded + bufferSize - 1) / bufferSize;
 static const int allocatedSamples = bufferCount * bufferSize * 2;
 
@@ -21,7 +21,7 @@ using namespace std;
 #define pin_num 27
  Adafruit_NeoPixel Strip(num_of_leds, pin_num, NEO_GRB + NEO_KHZ800);
  
-  //move to image file
+//move to image file
 void initPixels() 
 {
   for(int i = 0; i < allocatedSamples; i++)

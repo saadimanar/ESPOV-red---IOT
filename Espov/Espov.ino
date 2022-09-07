@@ -2,6 +2,16 @@
 #include "WS2812B.h"
 #include "File.h"
 #include <vector>
+#include <FastLED.h>
+
+
+#define DATA_PIN    27
+#define NUM_LEDS    45
+#define BRIGHTNESS  64
+#define LED_TYPE    WS2812B
+#define COLOR_ORDER RGB
+
+CRGB leds[NUM_LEDS];
 
 static const int buttonPin = 5;
 static const int ledpin = 27;
@@ -12,11 +22,11 @@ static const int speed = 3;
 Gyro gyro(0, 1);
 
 
-//image size is 128*128 and each pixel has 3 brightnesses, RGB
-unsigned char image[128*128][3];
+//image size is 40*40 and each pixel has 3 brightnesses, RGB
+unsigned char image[40*40][3];
 
 //image dimensions
-int imageRes[] = {128, 128};
+int imageRes[] = {40, 40};
 
 //starting from index 0 
 int currentImage = 0;
@@ -27,14 +37,14 @@ bool loadCurrentImage()
   char filename[32];
   sprintf(filename, "/spiffs/image%d.bin", currentImage); //loads image to filename
   //if couldn't load image --> set zeros (default color)
-  if(!readFromFile(filename, image[0], 128 * 128 * 3))
+  if(!readFromFile(filename, image[0], 40 * 40 * 3))
   {
-    for(int y = 0; y < 128; y++)
-      for(int x = 0; x < 128; x++)
+    for(int y = 0; y < 40; y++)
+      for(int x = 0; x < 40; x++)
       {
-        image[y * 128 + x][0] = 0;//x * 2;
-        image[y * 128 + x][1] = 0;//y * 2;
-        image[y * 128 + x][2] = 0;//254 - x * 2;
+        image[y * 40 + x][0] = 0;//x * 2;
+        image[y * 40 + x][1] = 0;//y * 2;
+        image[y * 40 + x][2] = 0;//254 - x * 2;
       }    
     return false;
   } 
@@ -70,7 +80,7 @@ void setup()
   while(!Serial);
   Strip.begin();
   Strip.clear();
-  initPixels();
+  //initPixels();
   pinMode(buttonPin, INPUT);
   gyro.calculateCorrection();   //calculate initial position 
   initFileSystem();
@@ -104,16 +114,16 @@ void turnOff()
 //update image according to current angle
 void loopSaber(int dt)
 {
-   uint32_t res[45];
+  uint32_t res[45];
   vector<int> result = return_angle(dt);
+  
   int sx = result[0];
   int sy = result[1];
-  //-----------------------fill the pixels-----------------------------
   int sample = 0;
   for(int i = 0; i < pixelCount; i++)
   {
-    int x = 64 + (int)(sx * (i + 20));
-    int y = 45 + (int)(sy * (i + 20));
+    int x = 20 + (int)(sx * (i)); //////////////+20
+    int y = 45 + (int)(sy * (i));
     if(i * speed < visibleLeds)
     {
       int a = 0;
@@ -137,50 +147,41 @@ void loopSaber(int dt)
 
 void loop()
 {
-  // int res[45];
   static int time = 0;
   int t = millis();
   int dt = t - time;
   time = t;
-  uint32_t res[45];
+      Serial.println("helllllo1");
+
   if(digitalRead(buttonPin) == LOW && !on){
     turnOn();
-   // loopSaber(dt);
-
-      for(int x = 0; x < 45; x++)
-      {
-        Serial.println(image[x][0]);
-        Serial.println(image[x][1]);
-        Serial.println(image[x][2]);
-        //res[x] = Strip.Color((int)image[x][0],(int)image[x][1],(int)image[x][2]);
-        res[x] = Strip.Color(50,255,0);
-        // Serial.println("the color is");
-       // Serial.println(res[x]);
-      // res[x] = Strip.Color(bitLUT[((int)image[x][1] * image[x][1]) >> 8],bitLUT[((int)image[x][0] * image[x][0]) >> 8],bitLUT[((int)image[x][2] * image[x][2]) >> 8]);
-        Strip.setPixelColor(x,res[x]); 
-      }  
-    
-  
-    
-    Strip.show();
-    delay(10000);
-    
+    Serial.println("helllllo");
+   // loadCurrentImage();
+    delay(1000);
     }
-    if(digitalRead(buttonPin) == LOW && on){
-           turnOff();
-            for(int i=0;i<ledCount;i++ ){
-              res[i] = Strip.Color(0,0,255);  
-              Strip.setPixelColor(i,res[i]);  
-           } 
-           Strip.show();
-           delay(10000);
-            
+    else{
+      if(digitalRead(buttonPin) == LOW && on){
+        turnOff();
+         Serial.println("good");
+
+        delay(1000);
+        }
       }
-      
-    if(on)
-     visibleLeds += dt;
-    else
-     visibleLeds -= dt;
+    loopSaber(dt);
+
+
+if(on)
+  visibleLeds+=dt;
+  else
+  visibleLeds-=dt;
+
+
+
+
+
+
+  
+  
 }
 
 
