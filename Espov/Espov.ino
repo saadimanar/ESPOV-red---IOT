@@ -52,34 +52,35 @@ bool loadCurrentImage()
   
 }
 
-vector<int> return_angle(int dt){
+vector<float> return_angle(int dt){
   
   static float angle = 0;
   gyro.poll();
     float td = sqrt(gyro.rotationV[0] * gyro.rotationV[0] + gyro.rotationV[1] * gyro.rotationV[1] + gyro.rotationV[2] * gyro.rotationV[2]);
   float d = gyro.rotationV[2] * dt * 0.001;
   angle += d; 
-  if(td < 5)
-  {
+  if(td < 5){
     float l = sqrt(gyro.positionA[0] * gyro.positionA[0] + gyro.positionA[1] * gyro.positionA[1] + gyro.positionA[2] * gyro.positionA[2]);
     float rl = 1 / ((l == 0)? 1 : l);
     angle = angle * 0.9 + acos(rl * gyro.positionA[0]) * 180 / M_PI * 0.1;
   }
-  float sx = -cos(angle * M_PI / 180);
-  float sy = -sin(angle * M_PI / 180);
-  vector<int> result;
+  float sx = -cos(angle * M_PI / 180); 
+  float sy = -sin(angle * M_PI / 180); 
+  vector<float> result;
   result.push_back(sx);
   result.push_back(sy);
   return result;
 
-  }
+}
   
 void setup()
 {
   Serial.begin(115200);
   while(!Serial);
-  Strip.begin();
-  Strip.clear();
+  //Strip.begin();
+ // Strip.clear();
+  FastLED.addLeds<LED_TYPE,DATA_PIN,COLOR_ORDER>(leds,NUM_LEDS);
+  FastLED.setBrightness(BRIGHTNESS);
   //initPixels();
   pinMode(buttonPin, INPUT);
   gyro.calculateCorrection();   //calculate initial position 
@@ -89,7 +90,7 @@ void setup()
   bool loaded = loadCurrentImage();
   if(!loaded){
     Serial.println("image not loaded");
-    }
+  }
 }
 
 
@@ -115,49 +116,73 @@ void turnOff()
 void loopSaber(int dt)
 {
   uint32_t res[45];
-  vector<int> result = return_angle(dt);
+  vector<float> result = return_angle(dt);
   
-  int sx = result[0];
-  int sy = result[1];
+  float sx = result[0];
+  float sy = result[1];
+  
   int sample = 0;
   for(int i = 0; i < pixelCount; i++)
   {
-    int x = 20 + (int)(sx * (i)); //////////////+20
-    int y = 45 + (int)(sy * (i));
+    int x = 20 + (int)(sx * (i+20)); //////////////+20
+    int y = 45 + (int)(sy * (i+20));
     if(i * speed < visibleLeds)
     {
       int a = 0;
       if(x >= 0 && y >= 0 && x < imageRes[0] && y < imageRes[1]) 
         {
             a = imageRes[0] * y + x;
-            res[i] = Strip.Color(image[a][0],image[a][1],image[a][2]);  
+            leds[i] = CRGB(image[a][0],image[a][1],image[a][2]);
+            //res[i] = Strip.Color(image[a][0],image[a][1],image[a][2]);
+           // Serial.println(res[i]); 
         }
       
     }
     else
     {
-      res[i] = Strip.Color(0,0,255);   
+      //res[i] = Strip.Color(0,0,255);   
+       leds[i] = CRGB(0,255,0); // this should be green -> displays red ! 
+      //leds[i] = CRGB(255,0,0); // this is Green why ? 
     } 
-    Strip.setPixelColor(i,res[i]);
+    //Strip.setPixelColor(i,res[i]);
   }
- 
-  Strip.show();
+   //Serial.println("res0");
+  // Serial.println(res[0]);
+  // Serial.println("res35");
+  // Serial.println(res[35]);
+   Serial.println("sx");
+   Serial.println(sx);
+   Serial.println("sy");
+   Serial.println(sy);
+   //Strip.show();
+   FastLED.show();
 }
 
 
 void loop()
 {
+  
   static int time = 0;
   int t = millis();
   int dt = t - time;
   time = t;
-      Serial.println("helllllo1");
+     // Serial.println("helllllo1");
 
   if(digitalRead(buttonPin) == LOW && !on){
     turnOn();
     Serial.println("helllllo");
    // loadCurrentImage();
     delay(1000);
+    for(int i =0;i<1600;i++){
+      for(int j=0;j<3;j++){
+        //Serial.println(image[i][j]);
+        }
+      }
+    
+
+
+
+    
     }
     else{
       if(digitalRead(buttonPin) == LOW && on){
@@ -167,6 +192,8 @@ void loop()
         delay(1000);
         }
       }
+      
+
     loopSaber(dt);
 
 
@@ -183,20 +210,3 @@ if(on)
   
   
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
