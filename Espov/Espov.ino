@@ -1,3 +1,4 @@
+// ======================== INCLUDE=========================================
 #include "Gyro.h"
 #include "WS2812B.h"
 #include "File.h"
@@ -5,55 +6,47 @@
 #include <FastLED.h>
 
 
+// ===================== DEFINE =============================================
 #define DATA_PIN    27
-#define NUM_LEDS    45
+#define NUM_LEDS    66
 #define BRIGHTNESS  64
 #define LED_TYPE    WS2812B
 #define COLOR_ORDER RGB
 
-CRGB leds[NUM_LEDS];
-
+//====================== VARIABLES ===========================================
 static const int buttonPin = 5;
 static const int ledpin = 27;
-static const int ledCount = 45;
+static const int ledCount = 66;
 static const int speed = 3; 
-
-//initialize a motion sensor with ascale = 0, gscale = 1
 Gyro gyro(0, 1);
-
-
-//image size is 40*40 and each pixel has 3 brightnesses, RGB
-unsigned char image[40*40][3];
-
-//image dimensions
-int imageRes[] = {40, 40};
-
-//starting from index 0 
+unsigned char image[60*60][3];
+int imageRes[] = {60, 60};
 int currentImage = 0;
+CRGB leds[66];
+extern const uint8_t gamma8[];
 
 
 bool loadCurrentImage()
 {
   char filename[32];
-  sprintf(filename, "/spiffs/image%d.bin", currentImage); //loads image to filename
-  //if couldn't load image --> set zeros (default color)
-  if(!readFromFile(filename, image[0], 40 * 40 * 3))
+  sprintf(filename, "/spiffs/image%d.bin", currentImage);
+  if(!readFromFile(filename, image[0], 60 * 60 * 3))
   {
-    for(int y = 0; y < 40; y++)
-      for(int x = 0; x < 40; x++)
+    for(int y = 0; y < 60; y++)
+      for(int x = 0; x < 60; x++)
       {
-        image[y * 40 + x][0] = 0;//x * 2;
-        image[y * 40 + x][1] = 0;//y * 2;
-        image[y * 40 + x][2] = 0;//254 - x * 2;
+        image[y * 60 + x][0] = 0;//x * 2;
+        image[y * 60 + x][1] = 0;//y * 2;
+        image[y * 60 + x][2] = 0;//254 - x * 2;
       }    
     return false;
   } 
-  return true;
-  
+  return true; 
 }
 
-vector<float> return_angle(int dt){
-  
+
+vector<float> return_angle(int dt)
+{ 
   static float angle = 0;
   gyro.poll();
     float td = sqrt(gyro.rotationV[0] * gyro.rotationV[0] + gyro.rotationV[1] * gyro.rotationV[1] + gyro.rotationV[2] * gyro.rotationV[2]);
@@ -63,38 +56,33 @@ vector<float> return_angle(int dt){
     float l = sqrt(gyro.positionA[0] * gyro.positionA[0] + gyro.positionA[1] * gyro.positionA[1] + gyro.positionA[2] * gyro.positionA[2]);
     float rl = 1 / ((l == 0)? 1 : l);
     angle = angle * 0.9 + acos(rl * gyro.positionA[0]) * 180 / M_PI * 0.1;
-  }
+            }
   float sx = -cos(angle * M_PI / 180); 
   float sy = -sin(angle * M_PI / 180); 
   vector<float> result;
   result.push_back(sx);
   result.push_back(sy);
   return result;
-
 }
+
   
 void setup()
 {
   Serial.begin(115200);
   while(!Serial);
-  //Strip.begin();
- // Strip.clear();
   FastLED.addLeds<LED_TYPE,DATA_PIN,COLOR_ORDER>(leds,NUM_LEDS);
   FastLED.setBrightness(BRIGHTNESS);
-  //initPixels();
   pinMode(buttonPin, INPUT);
-  gyro.calculateCorrection();   //calculate initial position 
+  gyro.calculateCorrection();    
   initFileSystem();
-  
-  //check if image is not being loaded
   bool loaded = loadCurrentImage();
   if(!loaded){
     Serial.println("image not loaded");
-  }
+   }
 }
 
 
-bool on = false; // the strip is turned on/not
+bool on = false;
 int visibleLeds = 0;
 
 void turnOn()
@@ -110,103 +98,79 @@ void turnOff()
   visibleLeds = ledCount * speed + 100;
 }
 
-
-
-//update image according to current angle
 void loopSaber(int dt)
 {
-  uint32_t res[45];
+  uint32_t res[66];
   vector<float> result = return_angle(dt);
-  
   float sx = result[0];
   float sy = result[1];
-  
   int sample = 0;
   for(int i = 0; i < pixelCount; i++)
   {
-    int x = 20 + (int)(sx * (i+20)); //////////////+20
-    int y = 45 + (int)(sy * (i+20));
+    int x = 30 + (int)(sx * (i+20)); 
+    int y = 70 + (int)(sy * (i+20));
     if(i * speed < visibleLeds)
     {
       int a = 0;
       if(x >= 0 && y >= 0 && x < imageRes[0] && y < imageRes[1]) 
         {
             a = imageRes[0] * y + x;
-            leds[i] = CRGB(image[a][0],image[a][1],image[a][2]);
-            //res[i] = Strip.Color(image[a][0],image[a][1],image[a][2]);
-           // Serial.println(res[i]); 
+            leds[i] =CRGB(pgm_read_byte(&gamma8[image[a][1]]),pgm_read_byte(&gamma8[image[a][0]]),pgm_read_byte(&gamma8[image[a][2]]));
         }
-      
-    }
-    else
-    {
-      //res[i] = Strip.Color(0,0,255);   
-       leds[i] = CRGB(0,255,0); // this should be green -> displays red ! 
-      //leds[i] = CRGB(255,0,0); // this is Green why ? 
-    } 
-    //Strip.setPixelColor(i,res[i]);
+     }
+      else
+     {
+     leds[i] = CRGB(pgm_read_byte(&gamma8[146]),pgm_read_byte(&gamma8[103]),pgm_read_byte(&gamma8[103]));
+     } 
   }
-   //Serial.println("res0");
-  // Serial.println(res[0]);
-  // Serial.println("res35");
-  // Serial.println(res[35]);
-   Serial.println("sx");
-   Serial.println(sx);
-   Serial.println("sy");
-   Serial.println(sy);
-   //Strip.show();
    FastLED.show();
 }
 
 
 void loop()
 {
-  
   static int time = 0;
   int t = millis();
   int dt = t - time;
   time = t;
-     // Serial.println("helllllo1");
-
   if(digitalRead(buttonPin) == LOW && !on){
     turnOn();
     Serial.println("helllllo");
-   // loadCurrentImage();
-    delay(1000);
-    for(int i =0;i<1600;i++){
-      for(int j=0;j<3;j++){
-        //Serial.println(image[i][j]);
-        }
-      }
-    
-
-
-
-    
+    delay(1000);  
     }
-    else{
-      if(digitalRead(buttonPin) == LOW && on){
-        turnOff();
-         Serial.println("good");
-
-        delay(1000);
-        }
-      }
-      
-
-    loopSaber(dt);
-
-
-if(on)
-  visibleLeds+=dt;
+  else{
+  if(digitalRead(buttonPin) == LOW && on){
+    turnOff();
+    Serial.println("good");
+    delay(1000);
+    }
+  }
+  loopSaber(dt);
+  if(on)
+     visibleLeds+=dt;
   else
-  visibleLeds-=dt;
-
-
-
-
-
-
-  
-  
+     visibleLeds-=dt;
 }
+
+
+//============ FOR COLOR CORRECTION ======================
+const uint8_t PROGMEM gamma8[] = {
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,
+    1,  1,  1,  1,  1,  1,  1,  1,  1,  2,  2,  2,  2,  2,  2,  2,
+    2,  3,  3,  3,  3,  3,  3,  3,  4,  4,  4,  4,  4,  5,  5,  5,
+    5,  6,  6,  6,  6,  7,  7,  7,  7,  8,  8,  8,  9,  9,  9, 10,
+   10, 10, 11, 11, 11, 12, 12, 13, 13, 13, 14, 14, 15, 15, 16, 16,
+   17, 17, 18, 18, 19, 19, 20, 20, 21, 21, 22, 22, 23, 24, 24, 25,
+   25, 26, 27, 27, 28, 29, 29, 30, 31, 32, 32, 33, 34, 35, 35, 36,
+   37, 38, 39, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 50,
+   51, 52, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 66, 67, 68,
+   69, 70, 72, 73, 74, 75, 77, 78, 79, 81, 82, 83, 85, 86, 87, 89,
+   90, 92, 93, 95, 96, 98, 99,101,102,104,105,107,109,110,112,114,
+  115,117,119,120,122,124,126,127,129,131,133,135,137,138,140,142,
+  144,146,148,150,152,154,156,158,160,162,164,167,169,171,173,175,
+  177,180,182,184,186,189,191,193,196,198,200,203,205,208,210,213,
+  215,218,220,223,225,228,231,233,236,239,241,244,247,249,252,255 };
+
+
+  

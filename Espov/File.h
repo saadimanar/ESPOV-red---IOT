@@ -21,10 +21,7 @@ void initFileSystem()
   //esp_spiffs_format(0);
   size_t total = 0, used = 0;
   esp_spiffs_info(0, &total, &used);
- /* Serial.print("Total space on spiffs ");
-  Serial.println(total);
-  Serial.print("Used space ");
-  Serial.println(used);*/
+
 }
 
 void deinitFileSystem()
@@ -34,9 +31,6 @@ void deinitFileSystem()
 
 bool readFromFile(const char *fileName, unsigned char *dest, int count)
 {
- /* Serial.print("Reading ");
-  Serial.print(count);
-  Serial.println(" bytes from file.");*/
   FILE* f = fopen(fileName, "r");
   if(!f) return false;
   fread(dest, sizeof(unsigned char), count, f);
@@ -45,9 +39,6 @@ bool readFromFile(const char *fileName, unsigned char *dest, int count)
 
 bool writeToFile(const char *fileName, unsigned char *src, int count)
 {
- /* Serial.print("Writing ");
-  Serial.print(count);
-  Serial.println(" bytes to file.");*/
   FILE* f = fopen(fileName, "w");
   if(!f) return false;
   fwrite(src, sizeof(unsigned char), count, f);

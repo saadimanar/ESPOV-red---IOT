@@ -15,7 +15,6 @@ class Gyro
   int gscale, ascale;
 
 
-  //initialize gyro
   Gyro(int ascale = 0, int gscale = 0, uint8_t address = 0x68) //0x68 is the address for gyro6080
   {
     Wire.begin();
@@ -73,13 +72,12 @@ class Gyro
       delay(10);
     }
     correctionR[0] = dr[0] / samples; 
-    correctionR[1] = dr[0] / samples; //why dr[0] not dr[1] ? 
+    correctionR[1] = dr[0] / samples; 
     correctionR[2] = dr[0] / samples;
   }
 
   int poll()
-  {
-    
+  { 
     Wire.beginTransmission(address);
     Wire.write(0x3B);
     Wire.endTransmission(false);
@@ -88,20 +86,9 @@ class Gyro
     positionA[1] = readShort() * accScale * (1 << ascale);
     positionA[2] = readShort() * accScale * (1 << ascale);
     temperature = readShort() / 340.f + 36.53f;
-    //Serial.println("heeeeeeerreeeeeeeeeee3");
-
     rotationV[0] = (readShort() - correctionR[0]) * rotScale * (1 << gscale);
-        //Serial.println("heeeeeeerreeeeeeeeeee4");
-
     rotationV[1] = (readShort() - correctionR[1]) * rotScale * (1 << gscale);
-       // Serial.println("heeeeeeerreeeeeeeeeee5");
-
     rotationV[2] = (readShort() - correctionR[2]) * rotScale * (1 << gscale);
-        //Serial.println("heeeeeeerreeeeeeeeeee6");
-
-     return 0;
-
-
-
+    return 0;
   }
 };
