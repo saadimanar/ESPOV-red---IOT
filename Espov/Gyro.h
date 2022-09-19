@@ -62,7 +62,6 @@ class Gyro
       Wire.endTransmission(false);
       Wire.requestFrom((uint8_t)address, (uint8_t)14, (uint8_t)true);
       positionA[0] = readShort() * accScale * (1 << ascale);
-      //Serial.println(readShort());
       positionA[1] = readShort() * accScale * (1 << ascale);
       positionA[2] = readShort() * accScale * (1 << ascale);
       temperature = readShort() / 340.f + 36.53f;

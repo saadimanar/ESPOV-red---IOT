@@ -1,43 +1,51 @@
 // ======================== INCLUDE=========================================
 #include "Gyro.h"
-#include "WS2812B.h"
 #include "File.h"
 #include <vector>
 #include <FastLED.h>
 
+//===================ARGS FOR LEDS===========================================
+
+static const int pixelCount = 66 + 2;            
+static const int samplesNeeded = (pixelCount * 24 * 4 + 31) / 32;
+static const int stereoSamplesNeeded = (samplesNeeded + 1) / 2;
+static const int bufferSize = 55;
+static const int bufferCount = (stereoSamplesNeeded + bufferSize - 1) / bufferSize;
+static const int allocatedSamples = bufferCount * bufferSize * 2;
 
 // ===================== DEFINE =============================================
 #define DATA_PIN    27
 #define NUM_LEDS    66
-#define BRIGHTNESS  64
 #define LED_TYPE    WS2812B
 #define COLOR_ORDER RGB
-
+#define BRIGHTNESS 128
 //====================== VARIABLES ===========================================
 static const int buttonPin = 5;
 static const int ledpin = 27;
 static const int ledCount = 66;
 static const int speed = 3; 
 Gyro gyro(0, 1);
-unsigned char image[60*60][3];
-int imageRes[] = {60, 60};
+unsigned char image[55*55][3];
+int imageRes[] = {55, 55};
 int currentImage = 0;
 CRGB leds[66];
 extern const uint8_t gamma8[];
+
+using namespace std;
 
 
 bool loadCurrentImage()
 {
   char filename[32];
   sprintf(filename, "/spiffs/image%d.bin", currentImage);
-  if(!readFromFile(filename, image[0], 60 * 60 * 3))
+  if(!readFromFile(filename, image[0], 55 * 55 * 3))
   {
-    for(int y = 0; y < 60; y++)
-      for(int x = 0; x < 60; x++)
+    for(int y = 0; y < 55; y++)
+      for(int x = 0; x < 55; x++)
       {
-        image[y * 60 + x][0] = 0;//x * 2;
-        image[y * 60 + x][1] = 0;//y * 2;
-        image[y * 60 + x][2] = 0;//254 - x * 2;
+        image[y * 55 + x][0] = 0;
+        image[y * 55 + x][1] = 0;
+        image[y * 55 + x][2] = 0;
       }    
     return false;
   } 
@@ -107,8 +115,8 @@ void loopSaber(int dt)
   int sample = 0;
   for(int i = 0; i < pixelCount; i++)
   {
-    int x = 30 + (int)(sx * (i+20)); 
-    int y = 70 + (int)(sy * (i+20));
+    int x = 30 + (int)(-sx * (i + 20)); 
+    int y = 70 + (int)(sy * (i + 20));
     if(i * speed < visibleLeds)
     {
       int a = 0;
@@ -120,6 +128,7 @@ void loopSaber(int dt)
      }
       else
      {
+      //====default color======
      leds[i] = CRGB(pgm_read_byte(&gamma8[146]),pgm_read_byte(&gamma8[103]),pgm_read_byte(&gamma8[103]));
      } 
   }
@@ -134,17 +143,18 @@ void loop()
   int dt = t - time;
   time = t;
   if(digitalRead(buttonPin) == LOW && !on){
+    Serial.println("hello");
     turnOn();
-    Serial.println("helllllo");
     delay(1000);  
     }
-  else{
-  if(digitalRead(buttonPin) == LOW && on){
+ else{
+  if(digitalRead(buttonPin) == LOW && on)
+  {
+    Serial.println("world");
     turnOff();
-    Serial.println("good");
     delay(1000);
-    }
   }
+    }
   loopSaber(dt);
   if(on)
      visibleLeds+=dt;
