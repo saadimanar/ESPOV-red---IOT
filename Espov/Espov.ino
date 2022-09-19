@@ -45,7 +45,7 @@ bool loadCurrentImage()
     for(int y = 0; y < 55; y++)
       for(int x = 0; x < 55; x++)
       {
-        image[y * 55 + x][0] = 0;
+        image[y * 55 + x][0] = 255;
         image[y * 55 + x][1] = 0;
         image[y * 55 + x][2] = 0;
       }    
@@ -153,17 +153,21 @@ void loop()
  else{
   if(digitalRead(buttonPin) == LOW && on)
   {
-    pressed += dt;
+    
     //Serial.println("world");
     turnOff();
     delay(1000);
   }
     }
- loopSaber(dt);
- if(pressed > 10000 && on){
+    pressed += dt;
+   loopSaber(dt);
+   if(pressed > 10000 && on){
   //Serial.println("got in");
-     currentImage = (currentImage + 1) & 3;
-     loadCurrentImage();  
+     currentImage = (currentImage + 1) % 4;
+     bool loaded = loadCurrentImage();  
+     if(!loaded){
+      Serial.println(currentImage);
+      }
      pressed = 0;
   }
   
