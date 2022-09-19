@@ -28,10 +28,12 @@ Gyro gyro(0, 1);
 unsigned char image[55*55][3];
 int imageRes[] = {55, 55};
 int currentImage = 0;
+int pressed = 0;
 CRGB leds[66];
 extern const uint8_t gamma8[];
 
 using namespace std;
+
 
 
 bool loadCurrentImage()
@@ -83,6 +85,7 @@ void setup()
   pinMode(buttonPin, INPUT);
   gyro.calculateCorrection();    
   initFileSystem();
+  currentImage = 0 ; 
   bool loaded = loadCurrentImage();
   if(!loaded){
     Serial.println("image not loaded");
@@ -143,19 +146,27 @@ void loop()
   int dt = t - time;
   time = t;
   if(digitalRead(buttonPin) == LOW && !on){
-    Serial.println("hello");
+    //Serial.println("hello");
     turnOn();
     delay(1000);  
     }
  else{
   if(digitalRead(buttonPin) == LOW && on)
   {
-    Serial.println("world");
+    pressed += dt;
+    //Serial.println("world");
     turnOff();
     delay(1000);
   }
     }
-  loopSaber(dt);
+ loopSaber(dt);
+ if(pressed > 10000 && on){
+  //Serial.println("got in");
+     currentImage = (currentImage + 1) & 3;
+     loadCurrentImage();  
+     pressed = 0;
+  }
+  
   if(on)
      visibleLeds+=dt;
   else
