@@ -164,6 +164,7 @@ void loop()
    if(pressed > 10000 && on){
   //Serial.println("got in");
      currentImage = (currentImage + 1) % 4;
+     //if(currentImage == 4) currentImage = 0;
      bool loaded = loadCurrentImage();  
      if(!loaded){
       Serial.println(currentImage);
