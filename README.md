@@ -1,4 +1,4 @@
-# ESPOV-red---IOT
+# ESPOV-red-IOT
 Our project : Lightsaber
 Our project is based on the aspect of "persisitance of vision".
 Our lightsaber recieves images from mobile application via bluetooth or via a web app and it starts projecting the images once the lightsaber is moved, the images are changed when the button is pressed. 
