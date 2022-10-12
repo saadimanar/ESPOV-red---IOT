@@ -15,7 +15,7 @@ static const int bufferCount = (stereoSamplesNeeded + bufferSize - 1) / bufferSi
 static const int allocatedSamples = bufferCount * bufferSize * 2;
 
 // ==================== BLUETOOTH ===========================================
-
+/*
 #include "BluetoothSerial.h"
 //  check if Bluetooth is properly enabled
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
@@ -24,13 +24,13 @@ static const int allocatedSamples = bufferCount * bufferSize * 2;
 
 BluetoothSerial ESP_BT;
 int incoming;
+*/
 // ===================== DEFINE =============================================
 #define DATA_PIN    27
 #define NUM_LEDS    66
 #define LED_TYPE    WS2812B
 #define COLOR_ORDER RGB
 #define BRIGHTNESS 128
-#define MAX_IMG 3
 //====================== VARIABLES ===========================================
 static const int buttonPin = 5;
 static const int ledpin = 27;
@@ -90,10 +90,10 @@ vector<float> return_angle(int dt)
   
 void setup()
 {
-  Serial.begin(115200);
-  while(!Serial);
-  ESP_BT.begin("ESP32_RED"); //Bluetooth device name
-  Serial.println("The device started, now you can pair it with bluetooth!");
+  Serial.begin(19200);
+  //while(!Serial);
+  //ESP_BT.begin("ESP32_RED"); //Bluetooth device name
+  //Serial.println("The device started, now you can pair it with bluetooth!");
   FastLED.addLeds<LED_TYPE,DATA_PIN,COLOR_ORDER>(leds,NUM_LEDS);
   FastLED.setBrightness(BRIGHTNESS);
   pinMode(buttonPin, INPUT);
@@ -155,14 +155,15 @@ void loopSaber(int dt)
 
 void loop()
 { 
-  if (ESP_BT.available()) {
+  /*
+ if (ESP_BT.available()) {
     Serial.println("paired");
     Serial.write(ESP_BT.read());
   }
   delay(20);
   
   //image is changed when button is pressed.
-  
+  */
   static int time = 0;
   int t = millis();
   int dt = t - time;
@@ -174,7 +175,7 @@ void loop()
  
     }
  else{
-  if(digitalRead(buttonPin) == LOW && on && counter == MAX_IMG)
+  if(digitalRead(buttonPin) == LOW && on && counter == 3)
   { 
     counter = -1;
     delay(1000);
