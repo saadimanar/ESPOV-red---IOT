@@ -16,13 +16,14 @@ static const int allocatedSamples = bufferCount * bufferSize * 2;
 
 // ==================== BLUETOOTH ===========================================
 
-#include "BluetoothSerial.h"
+/*#include "BluetoothSerial.h"
 //  check if Bluetooth is properly enabled
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
 #endif
 
-BluetoothSerial SerialBT;*/
+BluetoothSerial ESP_BT;
+int incoming;*/
 // ===================== DEFINE =============================================
 #define DATA_PIN    27
 #define NUM_LEDS    66
@@ -88,10 +89,10 @@ vector<float> return_angle(int dt)
   
 void setup()
 {
-  Serial.begin(115200);
-  while(!Serial);
-  SerialBT.begin("ESP32"); //Bluetooth device name
-  Serial.println("The device started, now you can pair it with bluetooth!");
+  Serial.begin(19200);
+  //while(!Serial);
+  //ESP_BT.begin("ESP32_RED"); //Bluetooth device name
+  //Serial.println("The device started, now you can pair it with bluetooth!");
   FastLED.addLeds<LED_TYPE,DATA_PIN,COLOR_ORDER>(leds,NUM_LEDS);
   FastLED.setBrightness(BRIGHTNESS);
   pinMode(buttonPin, INPUT);
@@ -153,13 +154,11 @@ void loopSaber(int dt)
 
 void loop()
 { 
-   if (Serial.available()) {
-    SerialBT.write(Serial.read());
+/*  if (ESP_BT.available()) {
+    Serial.println("paired");
+    Serial.write(ESP_BT.read());
   }
-  if (SerialBT.available()) {
-    Serial.write(SerialBT.read());
-  }
-  delay(20);
+  delay(20);*/
   
   //image is changed when button is pressed.
   
