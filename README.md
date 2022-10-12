@@ -13,7 +13,7 @@ The git contains the following files :
    
 The libraris that we use with esp32 :
    1.FastLED , Version 3.5.0
-   2.vector , Version 
-   3.BluetoothSerial , Version 
-   4.esp_spiffs , Version
-   5.Wire , Version 
+   2.vector 
+   3.BluetoothSerial 
+   4.esp_spiffs 
+   5.Wire 
