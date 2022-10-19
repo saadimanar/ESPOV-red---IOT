@@ -1,26 +1,9 @@
+import 'BluetoothDeviceListEntry.dart';
+import 'detailpage.dart';
 import 'package:flutter/material.dart';
-import 'welcome_screen.dart';
+import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
+import 'pickImage.dart';
 
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      // home: HomePage(),
-      home: WelcomeScreen(),
-      theme: ThemeData(
-        brightness: Brightness.light,
-        primaryColor: Colors.redAccent,
-      ),
-      debugShowCheckedModeBanner: false,
-    );
-  }
-}
-
-/*
 class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
@@ -92,10 +75,14 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    // theme: ThemeData(
+    //   brightness: Brightness.light,
+    //   primaryColor: Colors.redAccent,
+    // );
     return Scaffold(
       appBar: AppBar(
         title: Text("Connect To Esp32"),
-        // backgroundColor: Colors.red,
+        backgroundColor: Colors.redAccent,
       ),
       body: Container(
         child: Column(
@@ -115,50 +102,19 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   });
                 }
               },
-              //activeColor: Colors.red,
+              activeColor: Colors.redAccent,
             ),
             ListTile(
               title: Text("Bluetooth STATUS"),
               subtitle: Text(_bluetoothState.toString()),
               trailing: ElevatedButton(
-                /*
                 style: ElevatedButton.styleFrom(
-                  primary: Colors.red,
+                  primary: Colors.redAccent,
                 ),
-                */
                 child: Text("Settings"),
                 onPressed: () {
                   FlutterBluetoothSerial.instance.openSettings();
                 },
-              ),
-            ),
-            SizedBox(
-              height: 80,
-            ),
-            ElevatedButton(
-              /*
-              style: ElevatedButton.styleFrom(
-                primary: Colors.red,
-              ),
-              */
-              // shape: RoundedRectangleBorder(
-              //     borderRadius: BorderRadius.circular(18),
-              //     side: BorderSide(color: Colors.red)),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const Image_Picker()),
-                );
-                //_sendMessage(_selectedFrameSize);
-              },
-              // color: Colors.red,
-              //textColor: Colors.white,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  'PICK IMAGE',
-                  style: TextStyle(fontSize: 24),
-                ),
               ),
             ),
             Expanded(
@@ -187,4 +143,3 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     }));
   }
 }
-*/
