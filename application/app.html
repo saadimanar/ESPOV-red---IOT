@@ -12,16 +12,16 @@ function addFile(file)
     img.onload = function()
     {
       var ctx = document.querySelector('canvas').getContext('2d');
-      var s = (img.width > img.height) ? 55.0 / img.width : 55.0 / img.height;
+      var s = (img.width > img.height) ? 60.0 / img.width : 60.0 / img.height;
       var tx = Math.floor(img.width * s);
       var ty = Math.floor(img.height * s);
       img.width;
       img.height;
-      ctx.drawImage(img, 0, 0, 1, 1, 0, 0, 55, 55);
-      ctx.drawImage(img, 0, 0, img.width, img.height, (55 - tx) / 2, (55 - ty) / 2, tx, ty);
-      var data = ctx.getImageData(0, 0, 55, 55).data;
-      var a = new Uint8Array(55 * 55 * 3);
-      for(var i = 0; i < 55 * 55; i++)
+      ctx.drawImage(img, 0, 0, 1, 1, 0, 0, 60, 60);
+      ctx.drawImage(img, 0, 0, img.width, img.height, (60 - tx) / 2, (60 - ty) / 2, tx, ty);
+      var data = ctx.getImageData(0, 0, 60, 60).data;
+      var a = new Uint8Array(60 * 60 * 3);
+      for(var i = 0; i < 60 * 60; i++)
       {
         a[i * 3] = data[i * 4];
         a[i * 3 + 1] = data[i * 4 + 1];
@@ -87,27 +87,25 @@ function loadFile()
 
 <body style='font-family: arial'>
 <h2>Persistance Of Vision - IOT PROJECT</h2>
-    <h3>would you like to display a photo or a word?</h3>
+    <h3>display a photo</h3>
     <h4>select photo</h4>
 <div style="max-width: 300px">
   <div class='menu'>
       <button onclick='loadFile()'>Select Image &#x1F4C2;</button> 
       <input id='addimage' type='file' onchange='addFiles(event)' accept='image/*' hidden>
+
   </div>
 	<div id="filearea">
 	</div>
-  <canvas width='55' height='55'></canvas>
+  <canvas width='60' height='60'></canvas>
 </div>
-    <form>
-        <label for="insertedWord"><h4>insert a word to display</h4></label>
-  <input type="text" id="insertedWord" name="insertedWord">
-  <button type="submit" value="Submit">Submit</button>
-</form>
+
     <h5> project by:
     Adan Assli, Manar Saadi, Hadeel Arsheed</h5>
     
     <style>
 body {
+  background-color: red
   background-image: url('g.jpg');
   background-repeat: no-repeat;
   background-attachment: fixed;  
