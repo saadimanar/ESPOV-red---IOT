@@ -1,11 +1,6 @@
-/// ********************************************************************************************************************
-/// multiple include protection
-/// ********************************************************************************************************************
+
 
 #pragma once
-
-/// ********************************************************************************************************************
-/// includes
 
 #include "BluetoothSerial.h"
 
@@ -23,7 +18,7 @@ BluetoothSerial BT;
 void begin() {
   bool success = BT.begin("ESP32");
   if (!success) {
-    Serial.println("An error occurred initializing Bluetooth.");
+    Serial.println("Bluetooth not initialized.");
     ESP.restart();
   } else {
     Serial.println("Bluetooth initialized.");

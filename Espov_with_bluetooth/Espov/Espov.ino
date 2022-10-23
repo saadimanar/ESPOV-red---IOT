@@ -117,7 +117,7 @@ void loopSaber(int dt)
    FastLED.show();
 }
 
-void update_image(uint8_t byte) {
+void update_image_byte_by_byte(uint8_t byte) {
   int color = curr_index / (55*55);
   //assert(color == 0 || color == 1 || color == 2);
   int i = (curr_index % (55*55)) / 55;
@@ -131,11 +131,12 @@ void update_image(uint8_t byte) {
   }
   curr_index++;
   if (curr_index == (55*55*3)) {
-    clear_image();
+    clear_pending_image();
   }
 }
 
-void clear_image() {
+void clear_pending_image() {
+  Serial.println("Called clear_pending_image.");
   curr_index = 0;
 }
 
@@ -174,11 +175,11 @@ if (!bluetooth::available()){
  else{
   if(digitalRead(buttonPin) == LOW && on)
   {
+    clear_pending_image();
     turnOff();
     delay(1000);
   }
     }
-    pressed += dt;
    loopSaber(dt);
   if(on)
      visibleLeds+=dt;
@@ -190,17 +191,13 @@ if (!bluetooth::available()){
   if (bluetooth::available()) {
     while (bluetooth::available()) {
       auto image_bytes = bluetooth::read();
-      update_image((uint8_t)image_bytes);
+      update_image_byte_by_byte((uint8_t)image_bytes);
     }
    
-  }
-
+  } 
+ 
   
 }
-
-
-
-
 
 
 //============ FOR COLOR CORRECTION ======================
