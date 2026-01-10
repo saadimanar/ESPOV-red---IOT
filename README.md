@@ -18,4 +18,4 @@ The libraris that we use with esp32 :
    4.esp_spiffs 
    5.Wire 
 
-![IOT Project Image](IotProjectImage2.jpg)
+<img src="IotProjectImage2.jpg" alt="IOT Project Image" width="500">
