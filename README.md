@@ -20,4 +20,4 @@ The libraris that we use with esp32 :
 
 
 
-![IOT Project Image](IotProjectImage2.jpg)
+![IOT Project Image](IotProjectImage.png)
